@@ -87,7 +87,7 @@ export default function Import() {
               <p className="muted" style={{ margin: "0 0 6px" }}>{g.prefix}</p>
               {g.codes.map((code) => (
                 <label key={code} className="list-row" style={{ cursor: "pointer" }}>
-                  <span>{code}</span>
+                  <span style={{ whiteSpace: "nowrap" }}>{code}</span>
                   <input
                     type="radio"
                     name="section"
