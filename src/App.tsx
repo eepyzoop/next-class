@@ -7,6 +7,7 @@ import ToDoEditor from "./pages/ToDoEditor";
 import Settings from "./pages/Settings";
 import ThemePicker from "./pages/ThemePicker";
 import { useReminderChecker } from "./hooks/useReminderChecker";
+import { usePushSync } from "./hooks/usePushSync";
 import { BANNER_EVENT, type BannerDetail } from "./lib/notifications";
 
 // xlsx is a large dependency only needed on this screen — split it into its own chunk.
@@ -38,6 +39,7 @@ function Banner() {
 
 export default function App() {
   useReminderChecker();
+  usePushSync();
 
   return (
     <>

@@ -1,12 +1,30 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppData } from "../context/AppDataContext";
 import { useTheme } from "../context/ThemeContext";
 import { APP_VERSION } from "../version";
 import { ensureNotificationPermission, showNotification } from "../lib/notifications";
+import { getPushSubscription, isPushSupported, subscribeToPush, unsubscribeFromPush } from "../lib/push";
 
 export default function Settings() {
-  const { timetable, settings, updateSettings, clearTimetable } = useAppData();
+  const { timetable, todos, settings, updateSettings, clearTimetable } = useAppData();
   const { theme } = useTheme();
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+
+  useEffect(() => {
+    getPushSubscription().then((sub) => setPushSubscribed(sub != null));
+  }, []);
+
+  async function handleTogglePush(enabled: boolean) {
+    if (enabled) {
+      const ok = await subscribeToPush({ classes: timetable.classes, todos, settings });
+      setPushSubscribed(ok);
+      if (!ok) alert("Couldn't enable push notifications. Check notification permission and try again.");
+    } else {
+      await unsubscribeFromPush();
+      setPushSubscribed(false);
+    }
+  }
 
   async function handleExport() {
     const blob = new Blob([JSON.stringify(timetable, null, 2)], { type: "application/json" });
@@ -114,6 +132,18 @@ export default function Settings() {
             onChange={(e) => handleToggleTaskReminders(e.target.checked)}
           />
         </div>
+
+        {isPushSupported() && (
+          <div className="list-row">
+            <span>Notify Me While Closed</span>
+            <input
+              type="checkbox"
+              style={{ width: "auto" }}
+              checked={pushSubscribed}
+              onChange={(e) => handleTogglePush(e.target.checked)}
+            />
+          </div>
+        )}
 
         <div style={{ height: 4 }} />
         <button className="btn-primary" onClick={handleTestNotification}>
