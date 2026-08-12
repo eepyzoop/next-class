@@ -41,5 +41,5 @@ Deploys automatically to GitHub Pages on push to `main`.
 ## Inspiration
 
 NextClass was built as a rebuild of [**@sanecodeguy**](https://github.com/sanecodeguy)'s
-original iOS app of the same name — reimagined here as an installable, offline-first web app
-with a few tweaks and additional features along the way.
+original jailbroken iOS app of the same name — reimagined here as an installable, offline-first web app
+with my own tweaks and additional features along the way, for both android and ios.
