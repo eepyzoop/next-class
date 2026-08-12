@@ -9,6 +9,7 @@ import ThemePicker from "./pages/ThemePicker";
 import { useReminderChecker } from "./hooks/useReminderChecker";
 import { usePushSync } from "./hooks/usePushSync";
 import { BANNER_EVENT, type BannerDetail } from "./lib/notifications";
+import InstallBanner from "./components/InstallBanner";
 
 // xlsx is a large dependency only needed on this screen — split it into its own chunk.
 const Import = lazy(() => import("./pages/Import"));
@@ -44,6 +45,7 @@ export default function App() {
   return (
     <>
       <Banner />
+      <InstallBanner />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/classes" element={<AllClasses />} />

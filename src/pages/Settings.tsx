@@ -29,15 +29,24 @@ export default function Settings() {
   async function handleExport() {
     const blob = new Blob([JSON.stringify(timetable, null, 2)], { type: "application/json" });
     const file = new File([blob], "nextclass-timetable.json", { type: "application/json" });
+
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: "NextClass Timetable" });
-      return;
+      try {
+        await navigator.share({ files: [file], title: "NextClass Timetable" });
+        return;
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") return; // user cancelled the share sheet
+        // fall through to direct download on any other failure
+      }
     }
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "nextclass-timetable.json";
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     URL.revokeObjectURL(url);
   }
 
