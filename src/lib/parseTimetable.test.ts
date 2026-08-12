@@ -1,6 +1,14 @@
 import { describe, it, expect } from "vitest";
 import * as XLSX from "xlsx";
-import { getAvailableSections, extractClassesForSection, getRelevantSheets } from "./parseTimetable";
+import {
+  getAvailableSections,
+  extractClassesForSection,
+  getRelevantSheets,
+  getCourseCatalog,
+  getCoursesForSection,
+  getSectionsForCourse,
+  extractClassesForCourseSections,
+} from "./parseTimetable";
 
 function buildWorkbook(): XLSX.WorkBook {
   const aoa: (string | undefined)[][] = [
@@ -60,5 +68,65 @@ describe("parseTimetable", () => {
     const classes = extractClassesForSection(buildWorkbook(), "EE-1B");
     expect(classes).toHaveLength(1);
     expect(classes[0]).toMatchObject({ dayOfWeek: 2, roomNumber: "102", startTime: "10:00" }); // still Monday
+  });
+
+  it("excludes a title-row cell above the header row from the section list", () => {
+    const aoa: (string | undefined)[][] = [
+      ["Fall Timetable (V1.0)", "", "", ""],
+      ["", "", "9:00 - 9:50"],
+      ["Days", "Room"],
+      ["Mon", "101", "Data Structures (CS-2A)"],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Combined TT");
+    const groups = getAvailableSections(wb);
+    expect(groups).toEqual([{ prefix: "CS-", codes: ["CS-2A"] }]);
+  });
+});
+
+describe("course catalog (per-course section selection)", () => {
+  function buildRepeaterWorkbook(): XLSX.WorkBook {
+    const aoa: (string | undefined)[][] = [
+      ["", "", "9:00 - 9:50", "10:00 - 10:50"],
+      ["Days", "Room"],
+      // PF is jointly scheduled for 1A and 2A (2A students here are repeaters)
+      ["Mon", "101", "PF (CS-1A/2A): Mr. X", "Data Structures (CS-2A): Dr. Khan"],
+      // PF also runs as its own normal section for 1B, at a different time/room
+      ["Tue", "102", "", "PF (CS-1B): Mr. X"],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Combined TT");
+    return wb;
+  }
+
+  it("lists every course offered to a section, including shared/repeater ones", () => {
+    const catalog = getCourseCatalog(buildRepeaterWorkbook());
+    expect(getCoursesForSection(catalog, "CS-2A")).toEqual(["Data Structures", "PF"]);
+  });
+
+  it("lists every section that offers a given course", () => {
+    const catalog = getCourseCatalog(buildRepeaterWorkbook());
+    expect(getSectionsForCourse(catalog, "PF")).toEqual([{ prefix: "CS-", codes: ["CS-1A", "CS-1B", "CS-2A"] }]);
+  });
+
+  it("builds the final list from one section choice per course, letting a course be dropped or overridden", () => {
+    const catalog = getCourseCatalog(buildRepeaterWorkbook());
+    // A 2A student who already passed PF: keep Data Structures, drop PF entirely.
+    const dropped = extractClassesForCourseSections(catalog, new Map([["Data Structures", "CS-2A"]]));
+    expect(dropped.map((c) => c.courseName)).toEqual(["Data Structures"]);
+
+    // A 2A student repeating PF, but via the 1B time slot instead of the jointly-scheduled 1A/2A one.
+    const overridden = extractClassesForCourseSections(
+      catalog,
+      new Map([
+        ["Data Structures", "CS-2A"],
+        ["PF", "CS-1B"],
+      ])
+    );
+    expect(overridden).toHaveLength(2);
+    const pf = overridden.find((c) => c.courseName === "PF")!;
+    expect(pf).toMatchObject({ dayOfWeek: 3, roomNumber: "102", startTime: "10:00" }); // Tue slot, not the Mon 1A/2A one
   });
 });
