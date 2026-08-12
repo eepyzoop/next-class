@@ -1,122 +1,82 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { lazy, Suspense, useEffect, useState } from "react";
+import { NavLink, Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
+import AllClasses from "./pages/AllClasses";
+import ToDo from "./pages/ToDo";
+import ToDoEditor from "./pages/ToDoEditor";
+import Settings from "./pages/Settings";
+import ThemePicker from "./pages/ThemePicker";
+import { useReminderChecker } from "./hooks/useReminderChecker";
+import { BANNER_EVENT, type BannerDetail } from "./lib/notifications";
 
-function App() {
-  const [count, setCount] = useState(0)
+// xlsx is a large dependency only needed on this screen — split it into its own chunk.
+const Import = lazy(() => import("./pages/Import"));
+
+function Banner() {
+  const [banner, setBanner] = useState<BannerDetail | null>(null);
+
+  useEffect(() => {
+    function onBanner(e: Event) {
+      setBanner((e as CustomEvent<BannerDetail>).detail);
+      setTimeout(() => setBanner(null), 5000);
+    }
+    window.addEventListener(BANNER_EVENT, onBanner);
+    return () => window.removeEventListener(BANNER_EVENT, onBanner);
+  }, []);
+
+  if (!banner) return null;
+  return (
+    <div
+      className="panel"
+      style={{ position: "fixed", top: 12, left: 12, right: 12, zIndex: 100, maxWidth: 480, margin: "0 auto" }}
+    >
+      <strong>{banner.title}</strong>
+      <div className="muted">{banner.body}</div>
+    </div>
+  );
+}
+
+export default function App() {
+  useReminderChecker();
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <Banner />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/classes" element={<AllClasses />} />
+        <Route
+          path="/import"
+          element={
+            <Suspense fallback={<div className="screen">Loading…</div>}>
+              <Import />
+            </Suspense>
+          }
+        />
+        <Route path="/todo" element={<ToDo />} />
+        <Route path="/todo/new" element={<ToDoEditor />} />
+        <Route path="/todo/:id/edit" element={<ToDoEditor />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/theme" element={<ThemePicker />} />
+      </Routes>
+      <nav className="tabbar">
+        <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
+          <span className="icon">🏠</span>
+          Home
+        </NavLink>
+        <NavLink to="/classes" className={({ isActive }) => (isActive ? "active" : "")}>
+          <span className="icon">📅</span>
+          Classes
+        </NavLink>
+        <NavLink to="/todo" className={({ isActive }) => (isActive ? "active" : "")}>
+          <span className="icon">✓</span>
+          To-Do
+        </NavLink>
+        <NavLink to="/settings" className={({ isActive }) => (isActive ? "active" : "")}>
+          <span className="icon">⚙</span>
+          Settings
+        </NavLink>
+      </nav>
     </>
-  )
+  );
 }
-
-export default App
