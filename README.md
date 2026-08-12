@@ -1,32 +1,45 @@
-# React + TypeScript + Vite
+# NextClass
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Shows students their current or next class — course, room, instructor, countdown — plus a
+"Not To Do" list for upcoming quizzes, assignments, and homework. Import your school's combined
+timetable spreadsheet, pick your section, and NextClass builds your weekly schedule automatically.
 
-Currently, two official plugins are available:
+Fully offline. No accounts, no cloud sync, no analytics. All data stays on-device in IndexedDB.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Live app:** https://eepyzoop.github.io/next-class/
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Home** — current class in progress (with a progress bar) or the next one coming up
+- **Timetable import** — parses a `.xlsx` combined timetable, lets you pick your section, and
+  review/adjust individual courses (drop repeats or electives you're not taking, retarget a
+  course to a different section) before saving
+- **All Classes** — full weekly schedule grouped by day, with per-class or per-course delete
+- **Not To Do list** — quizzes, assignments, and homework with due dates, sorted ascending
+- **Reminders** — in-app notifications while the app is open, plus optional Web Push for
+  reminders while it's closed
+- **Installable PWA** — add to home screen on iOS or Android, works fully offline
+- **Themes** — a handful of dark, glass-panel color themes
 
-## Expanding the Oxlint configuration
+## Stack
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+React + TypeScript + Vite, `vite-plugin-pwa` for the service worker/offline caching, `idb` for
+storage, `sheetjs/xlsx` for parsing, `react-router` for navigation. The optional Web Push
+backend is a small Cloudflare Worker + KV (see `worker/`).
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Development
+
+```sh
+npm install
+npm run dev      # dev server
+npm test         # unit tests
+npm run build    # production build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Deploys automatically to GitHub Pages on push to `main`.
+
+## Inspiration
+
+NextClass was built as a rebuild of [**@sanecodeguy**](https://github.com/sanecodeguy)'s
+original iOS app of the same name — reimagined here as an installable, offline-first web app
+with a few tweaks and additional features along the way.
