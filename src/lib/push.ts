@@ -4,8 +4,7 @@ import { ensureNotificationPermission } from "./notifications";
 // Public VAPID key — safe to ship in client code, it only identifies the sender.
 const VAPID_PUBLIC_KEY = "BP4fLFOuSes2ifypR-5K3UwBUa0Dn84-uG7pvId6odLFZNqAUT6gweD_qDx8ughPswsZz2kKpsPY69LD9pHdzrI";
 
-// Filled in once the Cloudflare Worker is deployed (see worker/README.md).
-const PUSH_API_URL = "https://nextclass-push.YOUR_SUBDOMAIN.workers.dev";
+const PUSH_API_URL = "https://nextclass-push.izmaqamar55.workers.dev";
 
 function urlBase64ToUint8Array(base64: string): Uint8Array {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);

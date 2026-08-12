@@ -5,7 +5,7 @@ compatibility_date = "2026-08-12"
 # Created via `wrangler kv namespace create SUBSCRIPTIONS`; id filled in after creation.
 [[kv_namespaces]]
 binding = "SUBSCRIPTIONS"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "51eea37ce73b4283bd64ec822eb69d8f"
 
 # Checks every subscriber's schedule once a minute for due reminders.
 [triggers]
